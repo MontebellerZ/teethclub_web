@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { ReactSVG } from "react-svg";
 import Logo from "/logo.webp";
 import ShirtImg from "../../assets/shirts/tshirt.svg";
+import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 
 interface Design {
   id: number;
@@ -229,7 +230,7 @@ const ShirtDesigner: React.FC = () => {
           </div>
         </div>
 
-        <div className="lg:col-span-2 flex flex-col items-center">
+        <div className="lg:col-span-2 flex flex-col items-center gap-4">
           <div
             className="relative bg-gray-100 rounded-lg shadow-xl overflow-hidden"
             style={{ width: "500px", height: "600px" }}
@@ -266,9 +267,18 @@ const ShirtDesigner: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-4 text-center text-gray-600">
-            <p className="mb-2">• Arraste as imagens para posicionar</p>
+          <div className="text-center text-gray-600 space-y-2">
+            <p>• Arraste as imagens para posicionar</p>
             <p>• Use o canto inferior direito para redimensionar</p>
+          </div>
+
+          <div className="text-4xl flex gap-4 items-end justify-center flex-1 text-contrast [&>a]:hover:text-highlight [&>a]:transition-all">
+            <a target="_blank" href="https://www.instagram.com/teethclub_">
+              <FaInstagram />
+            </a>
+            <a target="_blank" href="https://api.whatsapp.com/send?phone=5527998555550">
+              <FaWhatsapp />
+            </a>
           </div>
         </div>
       </div>
