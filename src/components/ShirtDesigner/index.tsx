@@ -4,6 +4,8 @@ import Logo from "/logo.webp";
 import ShirtImg from "../../assets/shirts/tshirt.svg";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 
+const MIN_RESIZE = 20;
+
 interface Design {
   id: number;
   src: string;
@@ -13,23 +15,25 @@ interface Design {
   height: number;
 }
 
-type ShirtView = "front" | "back";
-type VisualizationOpt = {
+interface VisualizationOpt {
   label: string;
-  value: ShirtView;
-};
+  value: "front" | "back";
+}
 
 const visualizationOpts: VisualizationOpt[] = [
   { label: "Frente", value: "front" },
   { label: "Costas", value: "back" },
 ];
 
-const ShirtDesigner: React.FC = () => {
-  const [shirtColor, setShirtColor] = useState<string>("#ffffff");
+function ShirtDesigner() {
+  const [shirtColor, setShirtColor] = useState("#ffffff");
   const [frontDesigns, setFrontDesigns] = useState<Design[]>([]);
   const [backDesigns, setBackDesigns] = useState<Design[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
   const [currentView, setCurrentView] = useState<VisualizationOpt>(visualizationOpts[0]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const shirtRef = useRef<HTMLDivElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -53,42 +57,64 @@ const ShirtDesigner: React.FC = () => {
       }
     };
     reader.readAsDataURL(file);
+
+    e.target.value = "";
   };
 
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, design: Design) => {
-    const target = e.target as HTMLDivElement;
-    const oldImg = target.querySelector("img");
-
-    if (!oldImg) return;
-
-    e.dataTransfer.setDragImage(oldImg, design.width / 2, design.height / 2);
+  const getClientPos = (e: React.MouseEvent | React.TouchEvent) => {
+    return "touches" in e ? e.touches[0] : e;
   };
 
-  const handleDragEnd = (e: React.DragEvent<HTMLDivElement>, design: Design) => {
-    const target = e.target as HTMLDivElement;
-    const rect = target.parentElement?.getBoundingClientRect();
-    if (!rect) return;
+  const getDragPosition = (e: React.MouseEvent | React.TouchEvent, design: Design) => {
+    const { clientX, clientY } = getClientPos(e);
 
-    const newX = e.clientX - rect.left - design.width / 2;
-    const newY = e.clientY - rect.top - design.height / 2;
+    const shirt = shirtRef.current?.getBoundingClientRect();
+    if (!shirt) return { x: 0, y: 0 };
 
-    updateDesign(design.id, { x: newX, y: newY });
+    const pos = {
+      x: clientX - shirt.left - design.width / 2,
+      y: clientY - shirt.top - design.height / 2,
+    };
+
+    return pos;
   };
 
-  const handleRedimension = (e: React.MouseEvent, design: Design) => {
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    setIsDragging(true);
+    e.preventDefault();
+  };
+
+  const handleDrag = (e: React.MouseEvent | React.TouchEvent, design: Design) => {
+    if (!isDragging) return;
+
     e.preventDefault();
 
-    const startX = e.clientX;
-    const startY = e.clientY;
+    const { x, y } = getDragPosition(e, design);
+
+    updateDesign(design.id, { x, y });
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  const handleRedimension = (e: React.MouseEvent | React.TouchEvent, design: Design) => {
+    e.preventDefault();
+
+    const { clientX, clientY } = getClientPos(e);
+
+    const startX = clientX;
+    const startY = clientY;
     const startWidth = design.width;
     const startHeight = design.height;
 
     const doResize = (moveEvent: MouseEvent) => {
       const deltaX = moveEvent.clientX - startX;
       const deltaY = moveEvent.clientY - startY;
+
       updateDesign(design.id, {
-        width: Math.max(50, startWidth + deltaX),
-        height: Math.max(50, startHeight + deltaY),
+        width: Math.max(MIN_RESIZE, startWidth + deltaX),
+        height: Math.max(MIN_RESIZE, startHeight + deltaY),
       });
     };
 
@@ -128,23 +154,21 @@ const ShirtDesigner: React.FC = () => {
     return designs.map((design) => (
       <div
         key={design.id}
-        className="group absolute border-2 border-dashed border-transparent cursor-move hover:border-blue-500 active:border-blue-500 transition-colors"
+        className="group absolute border-2 border-dashed border-transparent cursor-move hover:border-blue-500 active:border-blue-500 transition-colors touch-none"
         style={{
           left: `${design.x}px`,
           top: `${design.y}px`,
           width: `${design.width}px`,
           height: `${design.height}px`,
         }}
-        draggable
-        onDragStart={(e) => handleDragStart(e, design)}
-        onDragEnd={(e) => handleDragEnd(e, design)}
+        onMouseDown={(e) => handleDragStart(e)}
+        onMouseMove={(e) => handleDrag(e, design)}
+        onMouseUp={() => handleDragEnd()}
+        onTouchStart={(e) => handleDragStart(e)}
+        onTouchMove={(e) => handleDrag(e, design)}
+        onTouchEnd={() => handleDragEnd()}
       >
-        <img
-          src={design.src}
-          alt="Design"
-          className="w-full h-full object-contain"
-          draggable="false"
-        />
+        <img src={design.src} alt="Design" className="w-full h-full object-contain" />
 
         <div className="absolute top-0 left-0 right-0 bottom-0" />
 
@@ -232,10 +256,10 @@ const ShirtDesigner: React.FC = () => {
         </div>
 
         <div className="lg:col-span-2 flex flex-col items-center gap-4">
-          <div className="relative bg-gray-100 rounded-lg shadow-xl overflow-hidden w-full sm:w-[400px] lg:w-[500px] aspect-[5/6] select-none">
-            <div className="absolute inset-0 flex items-center justify-center p-[10%] lg:p-[16%]">
-              <div className="relative w-full h-full bg-white">
-                <div className="absolute inset-0 bg-[linear-gradient(45deg,#f0f0f0_25%,transparent_25%),linear-gradient(-45deg,#f0f0f0_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#f0f0f0_75%),linear-gradient(-45deg,transparent_75%,#f0f0f0_75%)] bg-[length:20px_20px] bg-[position:0_0,0_10px,10px_-10px,-10px_0px]">
+          <div className="bg-gray-100 rounded-lg shadow-xl overflow-hidden w-full sm:w-[400px] lg:w-[500px] aspect-[5/6] select-none">
+            <div className="h-full w-full p-[10%] lg:p-[16%]">
+              <div className="relative w-full h-full" ref={shirtRef}>
+                <div className="h-full w-full bg-[linear-gradient(45deg,#fff_25%,transparent_25%),linear-gradient(-45deg,#fff_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#fff_75%),linear-gradient(-45deg,transparent_75%,#fff_75%)] bg-[length:20px_20px] bg-[position:0_0,0_10px,10px_-10px,-10px_0px]">
                   <ReactSVG
                     key={shirtColor}
                     src={ShirtImg}
@@ -274,6 +298,6 @@ const ShirtDesigner: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 export default ShirtDesigner;
