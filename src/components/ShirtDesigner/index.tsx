@@ -191,7 +191,7 @@ function ShirtDesigner() {
 
   return (
     <div className="h-full w-full p-4 flex flex-col lg:flex-row items-center lg:justify-center overflow-auto">
-      <div className="max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="max-w-6xl lg:w-full grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="bg-primary p-6 rounded-lg shadow-lg flex flex-col gap-5">
           <div className="flex flex-col">
             <img src={Logo} className="self-center max-w-56 w-full" />
