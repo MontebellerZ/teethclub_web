@@ -190,15 +190,17 @@ function ShirtDesigner() {
   const handleSendDesign = () => {};
 
   return (
-    <div className="max-w-6xl mx-auto p-4 max-h-full overflow-auto box-border">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-primary p-6 rounded-lg shadow-lg">
-          <img src={Logo} />
+    <div className="h-full w-full p-4 flex flex-col lg:flex-row items-center lg:justify-center overflow-auto">
+      <div className="max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="bg-primary p-6 rounded-lg shadow-lg flex flex-col gap-5">
+          <div className="flex flex-col">
+            <img src={Logo} className="self-center max-w-56 w-full" />
 
-          <h2 className="text-xl font-bold mb-4">Customize sua Camisa</h2>
+            <h2 className="text-xl font-bold">Customize sua Camisa</h2>
+          </div>
 
-          <div className="mb-6">
-            <label className="block mb-2 font-medium">Cor da Camisa:</label>
+          <div className="flex flex-col gap-1">
+            <label className="block font-medium">Cor da Camisa:</label>
             <input
               type="color"
               value={shirtColor}
@@ -207,9 +209,9 @@ function ShirtDesigner() {
             />
           </div>
 
-          <div className="mb-6">
-            <label className="block mb-2 font-medium">Visualização:</label>
-            <div className="flex space-x-2">
+          <div className="flex flex-col gap-1">
+            <label className="block font-medium">Visualização:</label>
+            <div className="flex gap-2">
               {visualizationOpts.map((opt, i) => (
                 <button
                   key={i}
@@ -226,13 +228,16 @@ function ShirtDesigner() {
             </div>
           </div>
 
-          <div className="mb-6">
+          <div className="flex flex-col gap-1">
             <button
               className="w-full bg-contrast text-white hover:bg-contrast/80 py-3 px-4 rounded transition"
               onClick={() => fileInputRef.current?.click()}
             >
               Adicionar Imagem
             </button>
+            <p className="text-sm text-gray-500">
+              Adicione imagens à {currentView.label.toLowerCase()} da camisa
+            </p>
             <input
               type="file"
               ref={fileInputRef}
@@ -240,19 +245,14 @@ function ShirtDesigner() {
               className="hidden"
               onChange={handleImageUpload}
             />
-            <p className="text-sm text-gray-500 mt-2">
-              Adicione imagens à {currentView.label.toLowerCase()} da camisa
-            </p>
           </div>
 
-          <div className="mt-8">
-            <button
-              className="w-full bg-confirm hover:bg-confirm/80 text-white py-3 px-4 rounded font-medium text-lg transition"
-              onClick={handleSendDesign}
-            >
-              Finalizar Design
-            </button>
-          </div>
+          <button
+            className="w-full bg-confirm hover:bg-confirm/80 text-white py-3 px-4 rounded font-medium text-lg transition"
+            onClick={handleSendDesign}
+          >
+            Finalizar Design
+          </button>
         </div>
 
         <div className="lg:col-span-2 flex flex-col items-center gap-4">
