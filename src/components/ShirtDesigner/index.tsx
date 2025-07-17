@@ -257,7 +257,7 @@ function ShirtDesigner() {
 
         <div className="lg:col-span-2 flex flex-col items-center gap-4">
           <div className="bg-gray-100 rounded-lg shadow-xl overflow-hidden w-full sm:w-[400px] lg:w-[500px] aspect-[5/6] select-none">
-            <div className="h-full w-full p-[10%] lg:p-[16%]">
+            <div className="h-full w-full p-[8%] lg:p-[16%]">
               <div className="relative w-full h-full" ref={shirtRef}>
                 <div className="h-full w-full bg-[linear-gradient(45deg,#fff_25%,transparent_25%),linear-gradient(-45deg,#fff_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#fff_75%),linear-gradient(-45deg,transparent_75%,#fff_75%)] bg-[length:20px_20px] bg-[position:0_0,0_10px,10px_-10px,-10px_0px]">
                   <ReactSVG
@@ -274,7 +274,7 @@ function ShirtDesigner() {
                   {renderDesigns()}
                 </div>
 
-                <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
                   {currentView.label.toUpperCase()}
                 </div>
               </div>
