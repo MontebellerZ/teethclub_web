@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { ReactSVG } from "react-svg";
+import ShirtImg from '../../assets/shirts/tshirt.svg'
 
 interface Design {
   id: number;
@@ -234,7 +235,7 @@ const ShirtDesigner: React.FC = () => {
                 >
                   <ReactSVG
                     key={shirtColor}
-                    src="src\assets\shirts\tshirt.svg"
+                    src={ShirtImg}
                     afterInjection={(svg) => {
                       svg.querySelectorAll("path").forEach((path) => {
                         path.style.fill = shirtColor;
