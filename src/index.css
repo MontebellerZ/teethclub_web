@@ -8,6 +8,20 @@
   --color-confirm: #518632;
 }
 
+html,
+body,
+#root {
+  @apply h-full w-full overflow-hidden;
+}
+
+html {
+  @apply bg-secondary/25;
+}
+
+#root {
+  @apply flex flex-col items-stretch justify-start;
+}
+
 button {
   @apply cursor-pointer;
 }

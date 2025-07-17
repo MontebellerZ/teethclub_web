@@ -77,6 +77,7 @@ const ShirtDesigner: React.FC = () => {
 
   const handleRedimension = (e: React.MouseEvent, design: Design) => {
     e.preventDefault();
+
     const startX = e.clientX;
     const startY = e.clientY;
     const startWidth = design.width;
@@ -145,13 +146,13 @@ const ShirtDesigner: React.FC = () => {
           draggable="false"
         />
 
-        {/* Controles de redimensionamento */}
+        <div className="absolute top-0 left-0 right-0 bottom-0" />
+
         <div
           className="absolute -bottom-2 -right-2 w-5 h-5 bg-blue-500 rounded-full cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-all"
           onMouseDown={(e) => handleRedimension(e, design)}
         />
 
-        {/* Botão de remoção */}
         <button
           className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full cursor-pointer w-6 h-6 opacity-0 group-hover:opacity-100 transition-all"
           onClick={() => handleRemove(design.id)}
@@ -165,8 +166,8 @@ const ShirtDesigner: React.FC = () => {
   const handleSendDesign = () => {};
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="max-w-6xl mx-auto p-4 max-h-full overflow-auto box-border">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="bg-primary p-6 rounded-lg shadow-lg">
           <img src={Logo} />
 
@@ -231,21 +232,10 @@ const ShirtDesigner: React.FC = () => {
         </div>
 
         <div className="lg:col-span-2 flex flex-col items-center gap-4">
-          <div
-            className="relative bg-gray-100 rounded-lg shadow-xl overflow-hidden"
-            style={{ width: "500px", height: "600px" }}
-          >
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative w-80 h-96" style={{ backgroundColor: "#ffffff" }}>
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%)",
-                    backgroundSize: "20px 20px",
-                    backgroundPosition: "0 0, 0 10px, 10px -10px, -10px 0px",
-                  }}
-                >
+          <div className="relative bg-gray-100 rounded-lg shadow-xl overflow-hidden w-full sm:w-[400px] lg:w-[500px] aspect-[5/6] select-none">
+            <div className="absolute inset-0 flex items-center justify-center p-[10%] lg:p-[16%]">
+              <div className="relative w-full h-full bg-white">
+                <div className="absolute inset-0 bg-[linear-gradient(45deg,#f0f0f0_25%,transparent_25%),linear-gradient(-45deg,#f0f0f0_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#f0f0f0_75%),linear-gradient(-45deg,transparent_75%,#f0f0f0_75%)] bg-[length:20px_20px] bg-[position:0_0,0_10px,10px_-10px,-10px_0px]">
                   <ReactSVG
                     key={shirtColor}
                     src={ShirtImg}
@@ -268,7 +258,7 @@ const ShirtDesigner: React.FC = () => {
           </div>
 
           <div className="text-center text-gray-600 space-y-2">
-            <p>• Arraste as imagens para posicionar</p>
+            <p>• Aperte e segure as imagens para reposicionar</p>
             <p>• Use o canto inferior direito para redimensionar</p>
           </div>
 
