@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { ReactSVG } from "react-svg";
-import ShirtImg from '../../assets/shirts/tshirt.svg'
+import Logo from "/logo.webp";
+import ShirtImg from "../../assets/shirts/tshirt.svg";
 
 interface Design {
   id: number;
@@ -12,12 +13,21 @@ interface Design {
 }
 
 type ShirtView = "front" | "back";
+type VisualizationOpt = {
+  label: string;
+  value: ShirtView;
+};
+
+const visualizationOpts: VisualizationOpt[] = [
+  { label: "Frente", value: "front" },
+  { label: "Costas", value: "back" },
+];
 
 const ShirtDesigner: React.FC = () => {
   const [shirtColor, setShirtColor] = useState<string>("#ffffff");
   const [frontDesigns, setFrontDesigns] = useState<Design[]>([]);
   const [backDesigns, setBackDesigns] = useState<Design[]>([]);
-  const [currentView, setCurrentView] = useState<ShirtView>("front");
+  const [currentView, setCurrentView] = useState<VisualizationOpt>(visualizationOpts[0]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,7 +45,7 @@ const ShirtDesigner: React.FC = () => {
         height: 150,
       };
 
-      if (currentView === "front") {
+      if (currentView.value === "front") {
         setFrontDesigns([...frontDesigns, newDesign]);
       } else {
         setBackDesigns([...backDesigns, newDesign]);
@@ -93,7 +103,7 @@ const ShirtDesigner: React.FC = () => {
     const updateArray = (designs: Design[]) =>
       designs.map((design) => (design.id === id ? { ...design, ...updates } : design));
 
-    if (currentView === "front") {
+    if (currentView.value === "front") {
       setFrontDesigns(updateArray(frontDesigns));
     } else {
       setBackDesigns(updateArray(backDesigns));
@@ -103,7 +113,7 @@ const ShirtDesigner: React.FC = () => {
   const handleRemove = (id: number) => {
     const updateArray = (designs: Design[]) => designs.filter((design) => design.id !== id);
 
-    if (currentView === "front") {
+    if (currentView.value === "front") {
       setFrontDesigns(updateArray(frontDesigns));
     } else {
       setBackDesigns(updateArray(backDesigns));
@@ -111,7 +121,7 @@ const ShirtDesigner: React.FC = () => {
   };
 
   const renderDesigns = () => {
-    const designs = currentView === "front" ? frontDesigns : backDesigns;
+    const designs = currentView.value === "front" ? frontDesigns : backDesigns;
 
     return designs.map((design) => (
       <div
@@ -154,7 +164,9 @@ const ShirtDesigner: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto p-4">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="bg-white p-6 rounded-lg shadow-lg">
+        <div className="bg-primary p-6 rounded-lg shadow-lg">
+          <img src={Logo} />
+
           <h2 className="text-xl font-bold mb-4">Customize sua Camisa</h2>
 
           <div className="mb-6">
@@ -170,28 +182,23 @@ const ShirtDesigner: React.FC = () => {
           <div className="mb-6">
             <label className="block mb-2 font-medium">Visualização:</label>
             <div className="flex space-x-2">
-              <button
-                className={`flex-1 py-2 px-4 rounded ${
-                  currentView === "front" ? "bg-blue-600 text-white" : "bg-gray-200"
-                }`}
-                onClick={() => setCurrentView("front")}
-              >
-                Frente
-              </button>
-              <button
-                className={`flex-1 py-2 px-4 rounded ${
-                  currentView === "back" ? "bg-blue-600 text-white" : "bg-gray-200"
-                }`}
-                onClick={() => setCurrentView("back")}
-              >
-                Costas
-              </button>
+              {visualizationOpts.map((opt, i) => (
+                <button
+                  key={i}
+                  className={`flex-1 py-2 px-4 rounded shadow-md ${
+                    currentView === opt ? "bg-secondary" : "bg-gray-200"
+                  }`}
+                  onClick={() => setCurrentView(opt)}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
 
           <div className="mb-6">
             <button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded transition"
+              className="w-full bg-contrast text-white hover:bg-blue-700 py-3 px-4 rounded transition"
               onClick={() => fileInputRef.current?.click()}
             >
               Adicionar Imagem
@@ -204,7 +211,7 @@ const ShirtDesigner: React.FC = () => {
               onChange={handleImageUpload}
             />
             <p className="text-sm text-gray-500 mt-2">
-              Adicione imagens à {currentView === "front" ? "frente" : "costas"} da camisa
+              Adicione imagens à {currentView.label.toLowerCase()} da camisa
             </p>
           </div>
 
@@ -249,7 +256,7 @@ const ShirtDesigner: React.FC = () => {
 
                 {/* Indicador de frente/costas */}
                 <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
-                  {currentView === "front" ? "FRENTE" : "COSTAS"}
+                  {currentView.label.toUpperCase()}
                 </div>
               </div>
             </div>
