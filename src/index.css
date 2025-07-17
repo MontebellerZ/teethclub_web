@@ -5,4 +5,9 @@
   --color-secondary: #f1b926;
   --color-highlight: #c03e1a;
   --color-contrast: #326986;
+  --color-confirm: #518632;
+}
+
+button {
+  @apply cursor-pointer;
 }

@@ -161,6 +161,8 @@ const ShirtDesigner: React.FC = () => {
     ));
   };
 
+  const handleSendDesign = () => {};
+
   return (
     <div className="max-w-6xl mx-auto p-4">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -185,8 +187,10 @@ const ShirtDesigner: React.FC = () => {
               {visualizationOpts.map((opt, i) => (
                 <button
                   key={i}
-                  className={`flex-1 py-2 px-4 rounded shadow-md ${
-                    currentView === opt ? "bg-secondary" : "bg-gray-200"
+                  className={`flex-1 py-2 px-4 rounded shadow-md transition ${
+                    currentView === opt
+                      ? "bg-secondary hover:bg-secondary/80"
+                      : "bg-gray-200 hover:bg-highlight/20"
                   }`}
                   onClick={() => setCurrentView(opt)}
                 >
@@ -198,7 +202,7 @@ const ShirtDesigner: React.FC = () => {
 
           <div className="mb-6">
             <button
-              className="w-full bg-contrast text-white hover:bg-blue-700 py-3 px-4 rounded transition"
+              className="w-full bg-contrast text-white hover:bg-contrast/80 py-3 px-4 rounded transition"
               onClick={() => fileInputRef.current?.click()}
             >
               Adicionar Imagem
@@ -216,13 +220,15 @@ const ShirtDesigner: React.FC = () => {
           </div>
 
           <div className="mt-8">
-            <button className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded font-medium text-lg transition">
+            <button
+              className="w-full bg-confirm hover:bg-confirm/80 text-white py-3 px-4 rounded font-medium text-lg transition"
+              onClick={handleSendDesign}
+            >
               Finalizar Design
             </button>
           </div>
         </div>
 
-        {/* Área de Visualização */}
         <div className="lg:col-span-2 flex flex-col items-center">
           <div
             className="relative bg-gray-100 rounded-lg shadow-xl overflow-hidden"
@@ -230,7 +236,6 @@ const ShirtDesigner: React.FC = () => {
           >
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative w-80 h-96" style={{ backgroundColor: "#ffffff" }}>
-                {/* Área interativa para designs */}
                 <div
                   className="absolute inset-0"
                   style={{
@@ -254,7 +259,6 @@ const ShirtDesigner: React.FC = () => {
                   {renderDesigns()}
                 </div>
 
-                {/* Indicador de frente/costas */}
                 <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
                   {currentView.label.toUpperCase()}
                 </div>
