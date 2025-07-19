@@ -25,3 +25,11 @@ html {
 button {
   @apply cursor-pointer;
 }
+
+.imageDesignContent > :not(img):not(div:first-of-type) {
+  @apply transition-all opacity-0 absolute flex items-center justify-center rounded-full w-6 aspect-square;
+}
+
+.imageDesignContent:hover > :not(img):not(div:first-of-type) {
+  @apply opacity-100;
+}

@@ -1,14 +1,20 @@
+import React from "react";
 import { useState, useRef } from "react";
 import { ReactSVG } from "react-svg";
 import Logo from "/logo.webp";
 import ShirtImg from "../../assets/shirts/tshirt.svg";
-import { FaInstagram, FaWhatsapp } from "react-icons/fa";
+import { FaInstagram, FaTimes, FaWhatsapp } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { RxTransparencyGrid } from "react-icons/rx";
+import Api from "../../config/Api";
 
 const MIN_RESIZE = 20;
 
 interface Design {
   id: number;
   src: string;
+  srcNoBackground?: string;
+  useNoBackground?: boolean;
   x: number;
   y: number;
   width: number;
@@ -31,35 +37,10 @@ function ShirtDesigner() {
   const [backDesigns, setBackDesigns] = useState<Design[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [currentView, setCurrentView] = useState<VisualizationOpt>(visualizationOpts[0]);
+  const [loading, setLoading] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const shirtRef = useRef<HTMLDivElement>(null);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const newDesign: Design = {
-        id: Date.now(),
-        src: event.target?.result as string,
-        x: 100,
-        y: 100,
-        width: 150,
-        height: 150,
-      };
-
-      if (currentView.value === "front") {
-        setFrontDesigns([...frontDesigns, newDesign]);
-      } else {
-        setBackDesigns([...backDesigns, newDesign]);
-      }
-    };
-    reader.readAsDataURL(file);
-
-    e.target.value = "";
-  };
 
   const getClientPos = (e: React.MouseEvent | React.TouchEvent) => {
     return "touches" in e ? e.touches[0] : e;
@@ -77,6 +58,17 @@ function ShirtDesigner() {
     };
 
     return pos;
+  };
+
+  const updateDesign = (id: number, updates: Partial<Design>) => {
+    const updateArray = (designs: Design[]) =>
+      designs.map((design) => (design.id === id ? { ...design, ...updates } : design));
+
+    if (currentView.value === "front") {
+      setFrontDesigns(updateArray(frontDesigns));
+    } else {
+      setBackDesigns(updateArray(backDesigns));
+    }
   };
 
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
@@ -100,6 +92,7 @@ function ShirtDesigner() {
 
   const handleRedimension = (e: React.MouseEvent | React.TouchEvent, design: Design) => {
     e.preventDefault();
+    e.stopPropagation();
 
     const { clientX, clientY } = getClientPos(e);
 
@@ -127,17 +120,6 @@ function ShirtDesigner() {
     window.addEventListener("mouseup", stopResize);
   };
 
-  const updateDesign = (id: number, updates: Partial<Design>) => {
-    const updateArray = (designs: Design[]) =>
-      designs.map((design) => (design.id === id ? { ...design, ...updates } : design));
-
-    if (currentView.value === "front") {
-      setFrontDesigns(updateArray(frontDesigns));
-    } else {
-      setBackDesigns(updateArray(backDesigns));
-    }
-  };
-
   const handleRemove = (id: number) => {
     const updateArray = (designs: Design[]) => designs.filter((design) => design.id !== id);
 
@@ -148,13 +130,85 @@ function ShirtDesigner() {
     }
   };
 
+  const handleRemoveBackground = async (design: Design) => {
+    if (loading) {
+      return toast.warn("Aguarde o carregamento anterior finalizar.");
+    }
+
+    const sendRemoveReq = async () => {
+      setLoading(true);
+
+      try {
+        const imageUrl = await Api.removeBackground(design.src);
+
+        if (!imageUrl) throw "Sem resposta da requisição de background";
+
+        updateDesign(design.id, {
+          srcNoBackground: imageUrl,
+          useNoBackground: true,
+        });
+      } catch (error) {
+        console.log(error);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    toast.promise(sendRemoveReq(), {
+      pending: "Removendo o fundo...",
+      success: "Fundo removido com sucesso!",
+      error: "Não foi possível remover o fundo da sua imagem.",
+    });
+  };
+
+  const handleUseBackground = async (e: React.MouseEvent | React.TouchEvent, design: Design) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!design.srcNoBackground) {
+      handleRemoveBackground(design);
+      return;
+    }
+
+    updateDesign(design.id, { useNoBackground: !design.useNoBackground });
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const newDesign: Design = {
+        id: Date.now(),
+        src: event.target?.result as string,
+        x: 100,
+        y: 100,
+        width: 150,
+        height: 150,
+      };
+
+      if (currentView.value === "front") {
+        setFrontDesigns([...frontDesigns, newDesign]);
+      } else {
+        setBackDesigns([...backDesigns, newDesign]);
+      }
+    };
+    reader.readAsDataURL(file);
+
+    e.target.value = "";
+  };
+
+  const handleSendDesign = () => {};
+
   const renderDesigns = () => {
     const designs = currentView.value === "front" ? frontDesigns : backDesigns;
 
     return designs.map((design) => (
       <div
         key={design.id}
-        className="group absolute border-2 border-dashed border-transparent cursor-move hover:border-blue-500 active:border-blue-500 transition-colors touch-none"
+        className="imageDesignContent group absolute border-2 border-dashed border-transparent cursor-move hover:border-contrast active:border-contrast transition-colors touch-none"
         style={{
           left: `${design.x}px`,
           top: `${design.y}px`,
@@ -168,30 +222,42 @@ function ShirtDesigner() {
         onTouchMove={(e) => handleDrag(e, design)}
         onTouchEnd={() => handleDragEnd()}
       >
-        <img src={design.src} alt="Design" className="w-full h-full object-contain" />
+        <img
+          src={design.useNoBackground ? design.srcNoBackground : design.src}
+          alt="Design"
+          className="w-full h-full object-contain"
+        />
 
-        <div className="absolute top-0 left-0 right-0 bottom-0" />
+        <div className="top-0 left-0 right-0 bottom-0" />
 
         <div
-          className="absolute -bottom-2 -right-2 w-5 h-5 bg-blue-500 rounded-full cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-all"
+          className="-bottom-2 -right-2 bg-blue-500 cursor-nwse-resize"
           onMouseDown={(e) => handleRedimension(e, design)}
+          title="Redimensionar"
         />
 
         <button
-          className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full cursor-pointer w-6 h-6 opacity-0 group-hover:opacity-100 transition-all"
-          onClick={() => handleRemove(design.id)}
+          className="-bottom-2 -left-2 bg-gray-300 text-gray-900 text-xs"
+          onClick={(e) => handleUseBackground(e, design)}
+          title="Remover fundo"
         >
-          ×
+          <RxTransparencyGrid />
+        </button>
+
+        <button
+          className="-top-3 -right-3 bg-red-500 text-white cursor-pointer"
+          onClick={() => handleRemove(design.id)}
+          title="Apagar imagem"
+        >
+          <FaTimes />
         </button>
       </div>
     ));
   };
 
-  const handleSendDesign = () => {};
-
   return (
     <div className="h-full w-full p-4 flex flex-col lg:flex-row items-center lg:justify-center overflow-auto">
-      <div className="max-w-6xl lg:w-full grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="max-w-6xl lg:w-full grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
         <div className="bg-primary p-6 rounded-lg shadow-lg flex flex-col gap-5">
           <div className="flex flex-col">
             <img src={Logo} className="self-center max-w-56 w-full" />
